@@ -1,2 +1,2 @@
 # mongodb-mesos
-a mesos framework for mesos
+a mesos scheduler for mesos
