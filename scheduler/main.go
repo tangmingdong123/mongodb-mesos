@@ -13,25 +13,29 @@ import (
 	"github.com/emicklei/go-restful/swagger"
 	//"github.com/magiconair/properties"
 	"github.com/tangmingdong123/mongodb-mesos/scheduler/rest"
+	mongodbschd "github.com/tangmingdong123/mongodb-mesos/scheduler/mesos"
 )
 
 /**
-mongodb-mesos -mesos-zk=zk://localhost:2181/mesos -zk zk://localhost:2181/ -name mongodb-mesos 
+mongodb-mesos -mesos=172.17.2.91:5050 -zk zk://192.168.3.223:2181/ -name mongodb-mesos 
 */
 func main() {
 	//parse args
-	mesosZk := flag.String("mesos-zk","zk://master.mesos:2181/mesos","zk of mesos")
-	zk := flag.String("zk","zk://localhost:2181","repo of mongodb-scheduler")
+	mesos := flag.String("mesos","172.17.2.91:5050","zk of mesos")
+	zk := flag.String("zk","zk://192.168.3.223:2181","repo of mongodb-scheduler")
 	name := flag.String("name","mongodb-mesos","framework's name")	
 	port := flag.Int("port",37017,"framework's http port")
 	
 	flag.Parse()
 	
 	fmt.Println("mongodb-mesos scheduler start...")
-	fmt.Printf("mongodb-mesos scheduler mesos-zk:%s,zk:%s,name:%s,port:%d\n",*mesosZk,*zk,*name,*port)
+	fmt.Printf("mongodb-mesos scheduler mesos:%s,zk:%s,name:%s,port:%d\n",*mesos,*zk,*name,*port)
 	
 	//launch HTTP REST service
-	launchHTTP(*port)
+	go launchHTTP(*port)
+	
+	//launch framework
+	mongodbschd.Start(mesos)
 }
 
 func launchHTTP(port int){
@@ -50,7 +54,7 @@ func launchHTTP(port int){
 			WebServicesUrl:  "http://127.0.0.1:"+strconv.Itoa(port),
 			ApiPath:         "/apidocs.json",
 			SwaggerPath:     "/apidocs/",
-			SwaggerFilePath: "/swagger-ui/dist",
+			SwaggerFilePath: "d:/swagger-ui/dist",
 		}
 	
 	swagger.RegisterSwaggerService(config,restful.DefaultContainer)

@@ -1,20 +1,55 @@
 package mesos
 
 import(
-	log "github.com/golang/glog"
+	log "github.com/Sirupsen/logrus"
 	"github.com/gogo/protobuf/proto"
 	sched "github.com/mesos/mesos-go/scheduler"
 	mesos "github.com/mesos/mesos-go/mesosproto"
-	util "github.com/mesos/mesos-go/mesosutil"
-	"time"
+	//util "github.com/mesos/mesos-go/mesosutil"
+	//"time"
 )
 
 type MongodbScheduler struct{
-	executor      *mesos.ExecutorInfo
+	
 }
 
-func newMongodbScheduler(exec *mesos.ExecutorInfo)*MongodbScheduler{
-	return &MongodbScheduler{executor:exec}
+func Start(master *string){
+	log.Infoln("startScheduler master:",*master)
+	
+	fwinfo := &mesos.FrameworkInfo{
+		User: proto.String(""),
+		Name: proto.String("mongodb-mesos"),
+	}
+	
+	log.Infoln("startScheduler makeFrameworkInfo ok:")
+	
+	config := sched.DriverConfig{
+		Scheduler:  newMongodbScheduler(),
+		Framework:  fwinfo,
+		Master:     *master,
+	}
+	
+	log.Infoln("startScheduler makeDriverConfig ok:")
+	
+	driver, err := sched.NewMesosSchedulerDriver(config)
+	if err != nil {
+		log.Errorln("Unable to create a SchedulerDriver ", err.Error())
+	}
+	
+	log.Infof("startScheduler makeDriver ok:%v",driver)
+	
+	stat, err := driver.Run()
+	if err != nil {
+		log.Infof("Framework stopped with status %s and error: %s", stat.String(), err.Error())
+	}
+	
+	log.Infoln("startScheduler driver run ok:")
+	log.Infof("stat:%v",stat)
+}
+
+
+func newMongodbScheduler()*MongodbScheduler{
+	return &MongodbScheduler{}
 }
 
 
