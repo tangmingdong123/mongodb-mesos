@@ -13,7 +13,8 @@ import (
 	"github.com/emicklei/go-restful/swagger"
 	//"github.com/magiconair/properties"
 	"github.com/tangmingdong123/mongodb-mesos/scheduler/rest"
-	mongodbschd "github.com/tangmingdong123/mongodb-mesos/scheduler/mesos"
+	"github.com/tangmingdong123/mongodb-mesos/scheduler/repo"
+	//mongodbschd "github.com/tangmingdong123/mongodb-mesos/scheduler/mesos"
 )
 
 /**
@@ -22,7 +23,7 @@ mongodb-mesos -mesos=172.17.2.91:5050 -zk zk://192.168.3.223:2181/ -name mongodb
 func main() {
 	//parse args
 	mesos := flag.String("mesos","172.17.2.91:5050","zk of mesos")
-	zk := flag.String("zk","zk://192.168.3.223:2181","repo of mongodb-scheduler")
+	zk := flag.String("zk","192.168.3.223:2181","repo of mongodb-scheduler")
 	name := flag.String("name","mongodb-mesos","framework's name")	
 	port := flag.Int("port",37017,"framework's http port")
 	
@@ -31,11 +32,14 @@ func main() {
 	fmt.Println("mongodb-mesos scheduler start...")
 	fmt.Printf("mongodb-mesos scheduler mesos:%s,zk:%s,name:%s,port:%d\n",*mesos,*zk,*name,*port)
 	
+	//int zk
+	repo.InitZK([]string{*zk},*name)
+	
 	//launch HTTP REST service
 	go launchHTTP(*port)
 	
 	//launch framework
-	mongodbschd.Start(mesos)
+	//mongodbschd.Start(mesos)
 }
 
 func launchHTTP(port int){
