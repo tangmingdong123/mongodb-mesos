@@ -7,6 +7,7 @@ import(
 	mesos "github.com/mesos/mesos-go/mesosproto"
 	//util "github.com/mesos/mesos-go/mesosutil"
 	//"time"
+	"encoding/json"
 )
 
 type MongodbScheduler struct{
@@ -14,14 +15,12 @@ type MongodbScheduler struct{
 }
 
 func Start(master *string){
-	log.Infoln("startScheduler master:",*master)
+	log.Debugln("startScheduler master:",*master)
 	
 	fwinfo := &mesos.FrameworkInfo{
 		User: proto.String(""),
 		Name: proto.String("mongodb-mesos"),
 	}
-	
-	log.Infoln("startScheduler makeFrameworkInfo ok:")
 	
 	config := sched.DriverConfig{
 		Scheduler:  newMongodbScheduler(),
@@ -29,21 +28,18 @@ func Start(master *string){
 		Master:     *master,
 	}
 	
-	log.Infoln("startScheduler makeDriverConfig ok:")
 	
 	driver, err := sched.NewMesosSchedulerDriver(config)
 	if err != nil {
 		log.Errorln("Unable to create a SchedulerDriver ", err.Error())
 	}
 	
-	log.Infof("startScheduler makeDriver ok:%v",driver)
 	
 	stat, err := driver.Run()
 	if err != nil {
 		log.Infof("Framework stopped with status %s and error: %s", stat.String(), err.Error())
 	}
 	
-	log.Infoln("startScheduler driver run ok:")
 	log.Infof("stat:%v",stat)
 }
 
@@ -67,6 +63,18 @@ func (sched *MongodbScheduler) Disconnected(sched.SchedulerDriver) {
 
 func (sched *MongodbScheduler) ResourceOffers(driver sched.SchedulerDriver, offers []*mesos.Offer) {
 	log.Warningf("Framework resourceOffer")
+	
+	ids := make([]*mesos.OfferID, len(offers))
+	for i,offer := range offers {
+		ids[i] = offer.Id
+	}
+	
+	for _,offer := range offers {
+		bytes,_ := json.Marshal(offer)
+		log.Infof("offer:%s",string(bytes))
+	}
+	
+	driver.LaunchTasks(ids,make([]*mesos.TaskInfo,0),nil)
 }
 
 func (sched *MongodbScheduler) StatusUpdate(driver sched.SchedulerDriver, status *mesos.TaskStatus) {
