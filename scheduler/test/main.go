@@ -1,7 +1,7 @@
 package main
 
 import(
-	"linkernetworks.com/mongodb-mesos/scheduler/repo"
+	"github.com/tangmingdong123/mongodb-mesos/scheduler/repo"
 	"encoding/json"
 	"fmt"
 )

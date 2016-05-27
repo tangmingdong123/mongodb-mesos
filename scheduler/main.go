@@ -12,7 +12,7 @@ import (
 	"github.com/emicklei/go-restful"
 	"github.com/emicklei/go-restful/swagger"
 	//"github.com/magiconair/properties"
-	"linkernetworks.com/mongodb-mesos/scheduler/rest"
+	"github.com/tangmingdong123/mongodb-mesos/scheduler/rest"
 )
 
 /**
