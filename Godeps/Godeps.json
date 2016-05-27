@@ -1,6 +1,0 @@
-{
-	"ImportPath": "github.com/tangmingdong123/mongodb-mesos",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v71",
-	"Deps": []
-}
