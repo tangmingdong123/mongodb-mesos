@@ -14,11 +14,11 @@ import (
 	//"github.com/magiconair/properties"
 	"github.com/tangmingdong123/mongodb-mesos/scheduler/rest"
 	"github.com/tangmingdong123/mongodb-mesos/scheduler/repo"
-	//mongodbschd "github.com/tangmingdong123/mongodb-mesos/scheduler/mesos"
+	mongodbschd "github.com/tangmingdong123/mongodb-mesos/scheduler/mesos"
 )
 
 /**
-mongodb-mesos -mesos=172.17.2.91:5050 -zk zk://192.168.3.223:2181/ -name mongodb-mesos 
+mongodb-mesos -mesos=172.17.2.91:5050 -zk 192.168.3.223:2181 -name mongodb-mesos 
 */
 func main() {
 	//parse args
@@ -32,14 +32,15 @@ func main() {
 	fmt.Println("mongodb-mesos scheduler start...")
 	fmt.Printf("mongodb-mesos scheduler mesos:%s,zk:%s,name:%s,port:%d\n",*mesos,*zk,*name,*port)
 	
-	//int zk
-	repo.InitZK([]string{*zk},*name)
-	
 	//launch HTTP REST service
 	go launchHTTP(*port)
 	
+	//int zk
+	repo.InitZK([]string{*zk},"/"+*name)
+	
 	//launch framework
-	//mongodbschd.Start(mesos)
+	mongodbschd.Start(mesos)
+	select{}
 }
 
 func launchHTTP(port int){

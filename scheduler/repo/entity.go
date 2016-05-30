@@ -1,9 +1,9 @@
 package repo
 
 const STATE_INIT = 0
-const STATE_DEPLOYING = 0
-const STATE_RUNNING = 1
-const STATE_END = 2
+const STATE_DEPLOYING = 1
+const STATE_RUNNING = 2
+const STATE_END = 3
 
 //a mongodb node
 type DBNode struct {

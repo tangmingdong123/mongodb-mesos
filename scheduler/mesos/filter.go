@@ -32,8 +32,10 @@ func isMatch(db *repo.DBNode, offers []*mesos.Offer, usedMap map[*mesos.Offer]*U
 }
 
 func merge(summary *Summary,used *Used){
-	summary.Cpu = summary.Cpu - used.Cpu
-	summary.Mem = summary.Mem - used.Mem
+	if (used != nil ){
+		summary.Cpu = summary.Cpu - used.Cpu
+		summary.Mem = summary.Mem - used.Mem
+	}
 }
 
 func sum(offer *mesos.Offer) *Summary {

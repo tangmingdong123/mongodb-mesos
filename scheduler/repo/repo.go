@@ -39,13 +39,14 @@ func load(root string) {
 	loadReplicatSet()
 	loadShardCluster()
 	
-	log.Infof("load meta finish :%s\n",meta)
+	log.Infof("load meta finish :%s",meta)
 }
 
 func createIfNotExist(path string, data []byte) {
+	log.Infof("createIfNotExist %s", path)
 	ex, _, err := conn.Exists(path)
 	if err != nil {
-		log.Infof("exist %s err:%s\n", path, err)
+		log.Infof("exist %s err:%s", path, err)
 		return
 	}
 	if !ex {
@@ -55,7 +56,7 @@ func createIfNotExist(path string, data []byte) {
 			zk.WorldACL(zk.PermAll))
 
 		if err != nil {
-			log.Infof("create %s,err:%s\n", path, err)
+			log.Infof("create %s,err:%s", path, err)
 			return
 		}
 	}
@@ -71,7 +72,7 @@ func loadStandalone() {
 	}
 
 	for i, child := range childs {
-		log.Infof("standalonePath child %d = %s\n", i, child)
+		log.Infof("standalonePath child %d = %s", i, child)
 
 		bytes, _, err := conn.Get(standalonePath + "/" + child)
 		if err != nil {
@@ -96,7 +97,7 @@ func loadShardCluster() {
 
 func SaveStandalone(node *DBNode){
 	path := rootPath+"/standalone/"+node.Name
-	log.Infof("saveStandalone %s\n",path)
+	log.Infof("saveStandalone %s",path)
 	
 	bytes,_ := json.Marshal(&node)
 	
@@ -109,12 +110,12 @@ func SaveStandalone(node *DBNode){
 	if(ex){
 		_,err := conn.Set(path,bytes,-1)
 		if(err!=nil){
-			log.Infof("saveStandalone fail %s\n",err)
+			log.Infof("saveStandalone fail %s",err)
 		}
 	}else{
 		_,err := conn.Create(path,bytes,0,zk.WorldACL(zk.PermAll))
 		if(err!=nil){
-			log.Infof("saveStandalone fail %s\n",err)
+			log.Infof("saveStandalone fail %s",err)
 		}
 	}
 }

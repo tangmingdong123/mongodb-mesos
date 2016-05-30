@@ -59,7 +59,7 @@ func (sched *MongodbScheduler) Disconnected(sched.SchedulerDriver) {
 }
 
 func (sched *MongodbScheduler) ResourceOffers(driver sched.SchedulerDriver, offers []*mesos.Offer) {
-	log.Warningf("Framework resourceOffer")
+	//log.Warningf("Framework resourceOffer")
 	
 	/*
 	for _, offer := range offers {
@@ -86,9 +86,12 @@ func (sched *MongodbScheduler) ResourceOffers(driver sched.SchedulerDriver, offe
 				u.Cpu = u.Cpu + float64(db.Cpu)
 				u.Mem = u.Mem + float64(db.Memory)
 				
+				log.Infof("toLaunchTask,%v",*db)
 				db.State = repo.STATE_DEPLOYING
+				repo.SaveStandalone(db)
+				
 				driver.LaunchTasks([]*mesos.OfferID{offer.GetId()}, 
-									make([]*mesos.TaskInfo, 0), 
+									[]*mesos.TaskInfo{genStandaloneTask(db,offer)}, 
 									&mesos.Filters{RefuseSeconds: proto.Float64(5)})
 			}
 		}
@@ -113,16 +116,22 @@ func (sched *MongodbScheduler) ResourceOffers(driver sched.SchedulerDriver, offe
 
 func (sched *MongodbScheduler) StatusUpdate(driver sched.SchedulerDriver, status *mesos.TaskStatus) {
 	log.Infoln("Status update: task", status.TaskId.GetValue(), " is in state ", status.State.Enum().String())
+	log.Infof("reason:%v,message:%v,source:%v\n",status.GetReason().Enum(),status.GetMessage(),status.GetSource())
 
-	if strings.Contains(status.GetTaskId().GetValue(), "_standalone_") {
-		db := repo.FindStandalone(status.GetTaskId().GetValue())
+	if strings.Contains(status.GetTaskId().GetValue(), PREFIX_TASK_STANDALONE) {
+		name := strings.Replace(status.GetTaskId().GetValue(),PREFIX_TASK_STANDALONE,"",-1)
+		db := repo.FindStandalone(name)
 
 		if db != nil {
+			bs,_ := repo.DBNodeJson(db)
+			log.Infof("db status updated,%v\n",string(bs))
 			if !IsRunning(status) {
 				db.State = repo.STATE_END
 			} else {
 				db.State = repo.STATE_RUNNING
 			}
+			
+			repo.SaveStandalone(db)
 		}
 	}
 

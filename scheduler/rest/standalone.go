@@ -2,7 +2,6 @@ package rest
 
 import (
 	"github.com/emicklei/go-restful"
-	"fmt"
 	"github.com/tangmingdong123/mongodb-mesos/scheduler/repo"
 	"strconv"
 	log "github.com/Sirupsen/logrus"
@@ -11,7 +10,6 @@ import (
 func (r *Router) CreateStandalone(req *restful.Request, resp *restful.Response){
 	resp.AddHeader("Content-Type","application/json")
 	
-	fmt.Println("invoke me")
 	
 	id := req.PathParameter("id")
 	cpu,_ := strconv.ParseFloat(req.QueryParameter("cpu"),32)
@@ -31,8 +29,8 @@ func (r *Router) CreateStandalone(req *restful.Request, resp *restful.Response){
 		
 		repo.AddStandalone(db)
 		
-		fmt.Println(db)
-		resp.Write([]byte("createStandalone."))
+		bs,_ := repo.DBNodeJson(db)
+		resp.Write(bs)
 	}
 }
 

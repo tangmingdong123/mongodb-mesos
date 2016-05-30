@@ -17,6 +17,9 @@ func AddStandalone(db *DBNode){
 func StandaloneJson()([]byte,error){
 	return json.Marshal(&meta.StandaloneMap)
 }
+func DBNodeJson(db *DBNode)([]byte,error){
+	return json.Marshal(db)
+}
 func FindStandalone(name string)(*DBNode){
 	return meta.StandaloneMap[name]
 }
