@@ -34,19 +34,19 @@ func handleStandalone(driver sched.SchedulerDriver,
 					}
 					u.Cpu = u.Cpu + float64(db.Cpu)
 					u.Mem = u.Mem + float64(db.Memory)
-					hostPort := selectPort(offer,u)
-					
+					hostPort := selectPort(offer, u)
+
 					if hostPort != 0 {
 						log.Infof("toLaunchTask,%v", *db)
 						db.State = repo.STATE_DEPLOYING
 						db.Port = hostPort
 						db.Hostname = *offer.Hostname
 						repo.SaveStandalone(db)
-	
+
 						driver.LaunchTasks([]*mesos.OfferID{offer.GetId()},
 							[]*mesos.TaskInfo{genStandaloneTask(db, offer, hostPort)},
 							&mesos.Filters{RefuseSeconds: proto.Float64(5)})
-					}else{
+					} else {
 						log.Errorf("no useful port")
 					}
 				}
@@ -68,17 +68,17 @@ func handleStandalone(driver sched.SchedulerDriver,
 	}
 }
 
-func genStandaloneTask(db *repo.DBNode, offer *mesos.Offer ,hostPort uint64) *mesos.TaskInfo {
+func genStandaloneTask(db *repo.DBNode, offer *mesos.Offer, hostPort uint64) *mesos.TaskInfo {
 	taskID := &mesos.TaskID{
 		Value: proto.String(PREFIX_TASK_STANDALONE + db.Name),
 	}
 	taskType := mesos.ContainerInfo_DOCKER
-	
+
 	containerPort := uint32(27017)
 	protocol := "tcp"
 	network := mesos.ContainerInfo_DockerInfo_BRIDGE
 	hostPort32 := uint32(hostPort)
-	
+
 	task := &mesos.TaskInfo{
 		Name:    proto.String(PREFIX_TASK_STANDALONE + db.Name),
 		TaskId:  taskID,
@@ -87,11 +87,11 @@ func genStandaloneTask(db *repo.DBNode, offer *mesos.Offer ,hostPort uint64) *me
 			Type: &taskType,
 			Docker: &mesos.ContainerInfo_DockerInfo{
 				Image: proto.String("mongo:3.2.6"),
-				PortMappings:[]*mesos.ContainerInfo_DockerInfo_PortMapping{
+				PortMappings: []*mesos.ContainerInfo_DockerInfo_PortMapping{
 					&mesos.ContainerInfo_DockerInfo_PortMapping{
-						HostPort: &hostPort32,
+						HostPort:      &hostPort32,
 						ContainerPort: &containerPort,
-						Protocol: &protocol}},
+						Protocol:      &protocol}},
 				Network: &network,
 			},
 		},
@@ -102,10 +102,10 @@ func genStandaloneTask(db *repo.DBNode, offer *mesos.Offer ,hostPort uint64) *me
 		Resources: []*mesos.Resource{
 			util.NewScalarResource("cpus", float64(db.Cpu)),
 			util.NewScalarResource("mem", float64(db.Memory)),
-			util.NewRangesResource("ports",[]*mesos.Value_Range{
+			util.NewRangesResource("ports", []*mesos.Value_Range{
 				&mesos.Value_Range{
 					Begin: &hostPort,
-					End: &hostPort,
+					End:   &hostPort,
 				}}),
 		},
 	}
@@ -128,11 +128,10 @@ func isMatchStandalone(db *repo.DBNode, offers []*mesos.Offer, usedMap map[*meso
 func updateStandaloneStatus(status *mesos.TaskStatus) {
 	name := strings.Replace(status.GetTaskId().GetValue(), PREFIX_TASK_STANDALONE, "", -1)
 	db := repo.FindStandalone(name)
-	
 
 	if db != nil {
-		bs, _ := repo.DBNodeJson(db)
-		log.Infof("db status update before,%v\n", string(bs))
+		//bs, _ := repo.DBNodeJson(db)
+		//log.Infof("db status update before,%v\n", string(bs))
 
 		if db.Cancel {
 			if IsFail(status) {
@@ -149,6 +148,6 @@ func updateStandaloneStatus(status *mesos.TaskStatus) {
 		}
 
 		repo.SaveStandalone(db)
-		log.Infof("db status update after,%v\n", string(bs))
+		//log.Infof("db status update after,%v\n", string(bs))
 	}
 }

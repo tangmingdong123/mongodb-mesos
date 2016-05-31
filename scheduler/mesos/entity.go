@@ -16,22 +16,22 @@ type Used struct {
 	Ports []uint64
 }
 
-func (u *Used) addPort(p uint64){
+func (u *Used) addPort(p uint64) {
 	if u.Ports == nil {
-		u.Ports = make([]uint64,0)
+		u.Ports = make([]uint64, 0)
 	}
-	u.Ports = append(u.Ports,p)
+	u.Ports = append(u.Ports, p)
 }
 
-func (u *Used) isPortUsed(p uint64)bool{
+func (u *Used) isPortUsed(p uint64) bool {
 	if u.Ports == nil {
-		u.Ports = make([]uint64,0)
+		u.Ports = make([]uint64, 0)
 	}
-	for _,port := range u.Ports{
+	for _, port := range u.Ports {
 		if port == p {
 			return true
 		}
 	}
-	
+
 	return false
 }

@@ -28,6 +28,7 @@ func (r *ReplicaSetService) CreateReplicaSet(req *restful.Request, resp *restful
 		rs.Name = id
 		rs.Cancel = false
 		rs.State = repo.STATE_INIT
+		rs.InitState = repo.INIT_STATE_INIT
 		
 		nodes := make([]*repo.DBNode,instances)
 		for i:=0;i<instances;i++ {

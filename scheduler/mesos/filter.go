@@ -68,24 +68,23 @@ func sum(offer *mesos.Offer) *Summary {
 	return &Summary{Cpu: cpus, Mem: mems, PortRanges: portArr}
 }
 
-func selectPort(offer *mesos.Offer,used *Used)uint64{
+func selectPort(offer *mesos.Offer, used *Used) uint64 {
 	//ports
 	portsResources := util.FilterResources(offer.Resources, func(res *mesos.Resource) bool {
 		return res.GetName() == "ports"
 	})
-	
 
 	for _, res := range portsResources {
 		portRanges := res.GetRanges().GetRange()
 		for _, rg := range portRanges {
 			port := rg.GetBegin()
-			
+
 			if !used.isPortUsed(port) {
 				used.addPort(port)
 				return port
 			}
 		}
 	}
-	
+
 	return uint64(0)
 }

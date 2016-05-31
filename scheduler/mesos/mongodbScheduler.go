@@ -1,7 +1,7 @@
 package mesos
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gogo/protobuf/proto"
 	mesos "github.com/mesos/mesos-go/mesosproto"
@@ -99,14 +99,16 @@ func (sched *MongodbScheduler) ResourceOffers(driver sched.SchedulerDriver, offe
 func (sched *MongodbScheduler) StatusUpdate(driver sched.SchedulerDriver, status *mesos.TaskStatus) {
 	log.Infoln("Status update: task", status.TaskId.GetValue(), " is in state ", status.State.Enum().String())
 	log.Infof("reason:%v,message:%v,source:%v\n", status.GetReason().Enum(), status.GetMessage(), status.GetSource())
-	
-	bs,_ := json.Marshal(status)
-	log.Infof("Status info %v", string(bs))
+
+	//bs, _ := json.Marshal(status)
+	//log.Infof("Status info %v", string(bs))
 
 	if strings.Contains(status.GetTaskId().GetValue(), PREFIX_TASK_STANDALONE) {
 		updateStandaloneStatus(status)
 	} else if strings.Contains(status.GetTaskId().GetValue(), PREFIX_TASK_REPLICA) {
 		updateReplicaStatus(status)
+	} else if strings.Contains(status.GetTaskId().GetValue(), PREFIX_TASK_REPLICA_INIT) {
+		updateReplicaInitStatus(status)
 	}
 
 }

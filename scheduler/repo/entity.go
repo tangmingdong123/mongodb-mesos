@@ -19,6 +19,7 @@ type ReplicaSet struct {
 	Name string   `json:"name"`
 	Nodes  []*DBNode `json:"nodes"`
 	State string `json:"state"`
+	InitState string `json:"initState"`
 	Cancel bool `json:"cancel"`
 }
 
