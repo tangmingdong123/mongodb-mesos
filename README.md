@@ -1,7 +1,20 @@
-# mongodb-mesos
-a mesos scheduler for mesos
+# 1 mongodb-mesos
+a mesos scheduler for mesos . 
+The scheduler provice a REST API to manage( create/delete/query ) your standalone mongodbs and replicaSets.
 
-# REST API
+For standalone case, The scheduler monitor the mongodb's status, restart it when the task is killed or failed.
+
+For replicaSet case, The scheduler will autoconfig the cluster ,and monitor the mongodb's status, restart it when the task is killed or failed.
+
+You can get the mongodb instances detail infomation by REST API
+
+# 2 start
+./scheduler -master $mesos-master-ip:port -zk zk-ip:port -name schedulername
+
+# 3 persistence
+All standalone mongodbs and replicaSets' detail info are be saved in the zookeeper. The scheduler will reload these info when it restart. The zk' path is /${your scheduler name},and it is /mongodb-mesos by default. 
+
+# 4 REST API
 # create a standalone mongodb
 curl -X DELETE --header 'Accept: application/json' --header 'Content-Type: application/x-www-form-urlencoded' -d 'cpu=1&mem=128' 'http://172.17.2.254:37017/standalone/1'
 
