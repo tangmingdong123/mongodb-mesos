@@ -13,4 +13,3 @@ func (r *Response) Byte() ([]byte,error) {
 	return json.Marshal(r)
 }
 
-const CODE_ALREADY_EXIST = 0

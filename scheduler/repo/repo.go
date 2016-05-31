@@ -8,7 +8,7 @@ import (
 )
 
 var meta *Meta = &Meta{StandaloneMap: make(map[string]*DBNode),
-	ReplicatSetMap:  make(map[string]*ReplicaSet),
+	ReplicaSetMap:  make(map[string]*ReplicaSet),
 	ShardClusterMap: make(map[string]*ShardCluster)}
 var conn *zk.Conn
 var rootPath string
@@ -32,8 +32,8 @@ func load(root string) {
 	//make sure the rootpath exist
 	createIfNotExist(root, []byte("root"))
 	createIfNotExist(root+"/standalone", []byte("standalone"))
-	createIfNotExist(root+"/replicaSet", []byte("replicaSet"))
-	createIfNotExist(root+"/shardCluster", []byte("shardCluster"))
+	createIfNotExist(root+"/replica", []byte("replicaSet"))
+	createIfNotExist(root+"/shard", []byte("shardCluster"))
 
 	loadStandalone()
 	loadReplicatSet()
@@ -89,33 +89,33 @@ func loadStandalone() {
 	}
 }
 func loadReplicatSet() {
+	replicaPath := rootPath + "/replica"
 
+	childs, _, err := conn.Children(replicaPath)
+	if err != nil {
+		log.Infof("fetch replicaPath's children fail,%s", err)
+		return
+	}
+
+	for i, child := range childs {
+		log.Infof("replicaPath child %d = %s", i, child)
+
+		bytes, _, err := conn.Get(replicaPath + "/" + child)
+		if err != nil {
+			log.Infof("fetch replica fail %s", err)
+		} else {
+			var rs ReplicaSet
+			err := json.Unmarshal(bytes, &rs)
+			if err != nil {
+
+			} else {
+				meta.ReplicaSetMap[rs.Name] = &rs
+			}
+		}
+	}
 }
 func loadShardCluster() {
 
 }
 
-func SaveStandalone(node *DBNode){
-	path := rootPath+"/standalone/"+node.Name
-	log.Infof("saveStandalone %s",path)
-	
-	bytes,_ := json.Marshal(&node)
-	
-	ex, _, err := conn.Exists(path)
-	if err != nil {
-		log.Infof("exist %s err:%s", path, err)
-		return
-	}
-	
-	if(ex){
-		_,err := conn.Set(path,bytes,-1)
-		if(err!=nil){
-			log.Infof("saveStandalone fail %s",err)
-		}
-	}else{
-		_,err := conn.Create(path,bytes,0,zk.WorldACL(zk.PermAll))
-		if(err!=nil){
-			log.Infof("saveStandalone fail %s",err)
-		}
-	}
-}
+

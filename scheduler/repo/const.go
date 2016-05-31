@@ -1,0 +1,8 @@
+package repo
+
+const STATE_INIT = "INIT"
+const STATE_DEPLOYING = "DEPLOYING"
+const STATE_RUNNING = "RUNING"
+const STATE_FAIL = "FAIL"
+const STATE_FINISH = "FINISH"
+const STATE_CANCEL = "CANCEL"

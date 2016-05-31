@@ -56,7 +56,7 @@ func launchHTTP(port int){
 	
 	config := swagger.Config{
 			WebServices:     restful.DefaultContainer.RegisteredWebServices(),
-			WebServicesUrl:  "http://127.0.0.1:"+strconv.Itoa(port),
+			WebServicesUrl:  "",
 			ApiPath:         "/apidocs.json",
 			SwaggerPath:     "/apidocs/",
 			SwaggerFilePath: "d:/swagger-ui/dist",
