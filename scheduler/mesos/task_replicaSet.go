@@ -290,14 +290,14 @@ func checkReplicaState(rs *repo.ReplicaSet) {
 			rs.State = repo.STATE_CANCEL
 		}
 	} else {
-		var hasRunning = false
+		var allRunning = true
 		for _, db := range rs.Nodes {
-			if db.State == repo.STATE_RUNNING {
-				hasRunning = true
+			if db.State != repo.STATE_RUNNING {
+				allRunning = false
 				break
 			}
 		}
-		if hasRunning { //if one is running ,then the rs is running
+		if allRunning { //if one is running ,then the rs is running
 			rs.State = repo.STATE_RUNNING
 		}
 	}

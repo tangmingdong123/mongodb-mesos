@@ -22,6 +22,8 @@ func Start(master *string) {
 	fwinfo := &mesos.FrameworkInfo{
 		User: proto.String(""),
 		Name: proto.String("mongodb-mesos"),
+		FailoverTimeout: proto.Float64(24*3600*1000),
+		Checkpoint: proto.Bool(true),
 	}
 
 	config := sched.DriverConfig{
