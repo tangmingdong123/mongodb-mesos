@@ -10,6 +10,7 @@ You can get the mongodb instances detail infomation by REST API
 
 # 2 start
 ./scheduler -master $mesos-master-ip:port -zk zk-ip:port -name schedulername
+for example : /scheduler -mesos 172.17.2.91:5050 -zk 172.17.2.91:2181 -name mongodb-mesos
 
 # 3 persistence
 All standalone mongodbs and replicaSets' detail info are be saved in the zookeeper. The scheduler will reload these info when it restart. The zk' path is /${your scheduler name},and it is /mongodb-mesos by default. 
