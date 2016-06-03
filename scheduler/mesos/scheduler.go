@@ -1,6 +1,7 @@
 package mesos
 
 import (
+	"strconv"
 	//"encoding/json"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gogo/protobuf/proto"
@@ -9,30 +10,35 @@ import (
 	//util "github.com/mesos/mesos-go/mesosutil"
 	//"time"
 	//"encoding/json"
-	//"github.com/tangmingdong123/mongodb-mesos/scheduler/repo"
+	"github.com/tangmingdong123/mongodb-mesos/scheduler/config"
+	"github.com/tangmingdong123/mongodb-mesos/scheduler/repo"
 	"strings"
 )
 
 type MongodbScheduler struct {
 }
 
-func Start(master *string) {
-	log.Debugln("startScheduler master:", *master)
+func Start() {
+	log.Infof("startScheduler master:%v,name:%v", *config.MesosMasterIpAndPort, *config.SchedulerName)
 
 	fwinfo := &mesos.FrameworkInfo{
-		User: proto.String(""),
-		Name: proto.String("mongodb-mesos"),
-		FailoverTimeout: proto.Float64(24*3600*1000),
-		Checkpoint: proto.Bool(true),
+		User:            proto.String(""),
+		Name:            proto.String(*config.SchedulerName),
+		Id:              &mesos.FrameworkID{Value: proto.String(*config.SchedulerName)},
+		FailoverTimeout: config.FailoverTimeoutSeconds, //in second
+		Checkpoint:      proto.Bool(true),
+		WebuiUrl:        proto.String("http://" + getDockerbrIP() + ":" + strconv.Itoa(*config.HTTPPort)),
 	}
 
-	config := sched.DriverConfig{
+	driverConfig := sched.DriverConfig{
 		Scheduler: newMongodbScheduler(),
 		Framework: fwinfo,
-		Master:    *master,
+		Master:    *config.MesosMasterIpAndPort,
 	}
 
-	driver, err := sched.NewMesosSchedulerDriver(config)
+	driver, err := sched.NewMesosSchedulerDriver(driverConfig)
+
+	log.Infof("schduler.driver create finish")
 	if err != nil {
 		log.Errorln("Unable to create a SchedulerDriver ", err.Error())
 	}
@@ -42,7 +48,34 @@ func Start(master *string) {
 		log.Infof("Framework stopped with status %s and error: %s", stat.String(), err.Error())
 	}
 
-	log.Infof("stat:%v", stat)
+}
+
+func listTasks() []*mesos.TaskStatus {
+	var list []*mesos.TaskStatus
+	//list standalone
+	for _, db := range repo.ListStandalone() {
+		if db.State != repo.STATE_DEPLOYING || db.State == repo.STATE_RUNNING {
+			state := mesos.TaskState_TASK_RUNNING
+			list = append(list, &mesos.TaskStatus{
+				TaskId: &mesos.TaskID{Value: proto.String(PREFIX_TASK_STANDALONE + db.Name)},
+				State:  &state,
+			})
+		}
+	}
+
+	//list replicaSet
+	for _, rs := range repo.ListReplicaSet() {
+		for _, db := range rs.Nodes {
+			state := mesos.TaskState_TASK_RUNNING
+			list = append(list, &mesos.TaskStatus{
+				TaskId: &mesos.TaskID{Value: proto.String(PREFIX_TASK_STANDALONE + db.Name)},
+				State:  &state,
+			})
+		}
+	}
+
+	//list shards,TODO
+	return list
 }
 
 func newMongodbScheduler() *MongodbScheduler {
@@ -51,10 +84,21 @@ func newMongodbScheduler() *MongodbScheduler {
 
 func (sched *MongodbScheduler) Registered(driver sched.SchedulerDriver, frameworkId *mesos.FrameworkID, masterInfo *mesos.MasterInfo) {
 	log.Infoln("Framework Registered with Master ", masterInfo)
+
+	_, err := driver.ReconcileTasks(listTasks())
+	if err != nil {
+		log.Infof("ReconcileTasks fail %v", err)
+	}
+
 }
 
 func (sched *MongodbScheduler) Reregistered(driver sched.SchedulerDriver, masterInfo *mesos.MasterInfo) {
 	log.Infoln("Framework Re-Registered with Master ", masterInfo)
+
+	_, err := driver.ReconcileTasks(listTasks())
+	if err != nil {
+		log.Infof("ReconcileTasks fail %v", err)
+	}
 }
 
 func (sched *MongodbScheduler) Disconnected(sched.SchedulerDriver) {
